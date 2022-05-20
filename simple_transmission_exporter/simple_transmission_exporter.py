@@ -24,16 +24,7 @@ STATUS = {
     6: 'seeding',
 }
 
-# verify all the environment variables are set
-for envvar in ["TRANSMISSION_HOST", "TRANSMISSION_PORT", "TRANSMISSION_USERNAME", "TRANSMISSION_PASSWORD"]:
-    tmp = os.getenv(envvar)
-    if not tmp:
-        print(f'ERROR: required environment variable {envvar} is missing, exiting..')
-        sys.exit(-1)
-    exec(envvar + " = tmp")
-
 app = Flask(__name__)
-
 
 @app.route('/')
 def homepage():
@@ -54,7 +45,12 @@ metric page: {request.host_url}metrics
 def metrics():
     _return = []
     start = datetime.datetime.now()
-    tc = transmissionrpc.Client(address=TRANSMISSION_HOST, port=TRANSMISSION_PORT, user=TRANSMISSION_USERNAME, password=TRANSMISSION_PASSWORD)
+    tc = transmissionrpc.Client(
+        address=os.environ.get('TRANSMISSION_HOST', 'localhost'),
+        port=os.environ.get('TRANSMISSION_PORT', 0),
+        user=os.environ.get('TRANSMISSION_USERNAME', 'transmission'),
+        password=os.environ.get('TRANSMISSION_PASSWORD', 'password'))
+
     stats = tc.session_stats()
 
     for metric in ['downloadSpeed', 'download_dir_free_space', 'uploadSpeed']:
@@ -90,5 +86,5 @@ def metrics():
     return response
 
 
-if __name__ == '__main__':
+def main():
     app.run(debug=False, port=PORT, host='0.0.0.0')
