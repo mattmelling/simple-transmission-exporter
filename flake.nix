@@ -16,7 +16,7 @@
         pythonEnv
       ];
     });
-  in {
+  in rec {
     packages = pkgs.lib.genAttrs systems (system: let
       pkgs = import nixpkgs { inherit system; };
     in {
@@ -25,6 +25,9 @@
     overlay = (final: prev: {
       simple-transmission-exporter = (simple-transmission-exporter pkgs);
     });
+    hydraJobs = {
+      inherit packages;
+    };
     nixosModules.simple-transmission-exporter = { config, lib, pkgs, ... }: with lib.types; let
       cfg = config.services.simple-transmission-exporter;
     in {
